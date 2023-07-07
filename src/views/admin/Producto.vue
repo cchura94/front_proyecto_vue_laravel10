@@ -38,12 +38,15 @@
       ref="dt"
       :value="productos"
       :totalRecords="totalRecords"
+      lazy
+      :loading="loading"
+      @page="onPage($event)"
       dataKey="id"
       :paginator="true"
-      :rows="10"
+      :rows="5"
       paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-      :rowsPerPageOptions="[5, 10, 25]"
-      currentPageReportTemplate="Mostrando {first} to {last} of {totalRecords} productos"
+      :rowsPerPageOptions="[3, 5, 10, 25]"
+      currentPageReportTemplate="Mostrando {first} al {last} de {totalRecords} productos"
       responsiveLayout="scroll"
     >
       <template #header>
@@ -53,7 +56,7 @@
           <h5 class="m-0">Gestión Productos</h5>
           <span class="block mt-2 md:mt-0 p-input-icon-left">
             <i class="pi pi-search" />
-            <InputText placeholder="Buscar..." />
+            <InputText placeholder="Buscar..." v-model="buscar" @keypress.enter="buscador()" />
           </span>
         </div>
       </template>
@@ -135,7 +138,7 @@
       :modal="true"
       class="p-fluid"
     >
-      {{ product }}
+      <!--{{ product }}-->
       <img
         :src="'demo/images/product/' + product.imagen"
         :alt="product.imagen"
@@ -217,19 +220,34 @@
       </template>
     </Dialog>
 
-    <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Confirmar" :modal="true">
-                    <div class="flex align-items-center justify-content-center">
-                        <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                        <span v-if="product"
-                            >¿Está seguro de eliminar el Producto <b>{{ product.nombre }}</b
-                            >?</span
-                        >
-                    </div>
-                    <template #footer>
-                        <Button label="No" icon="pi pi-times" class="p-button-text" @click="deleteProductDialog = false" />
-                        <Button label="Yes" icon="pi pi-check" class="p-button-text" @click="deleteProduct" />
-                    </template>
-                </Dialog>
+    <Dialog
+      v-model:visible="deleteProductDialog"
+      :style="{ width: '450px' }"
+      header="Confirmar"
+      :modal="true"
+    >
+      <div class="flex align-items-center justify-content-center">
+        <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
+        <span v-if="product"
+          >¿Está seguro de eliminar el Producto <b>{{ product.nombre }}</b
+          >?</span
+        >
+      </div>
+      <template #footer>
+        <Button
+          label="No"
+          icon="pi pi-times"
+          class="p-button-text"
+          @click="deleteProductDialog = false"
+        />
+        <Button
+          label="Yes"
+          icon="pi pi-check"
+          class="p-button-text"
+          @click="deleteProduct"
+        />
+      </template>
+    </Dialog>
   </div>
 </template>
 
@@ -249,14 +267,32 @@ const productDialog = ref(false);
 const product = ref({});
 const submitted = ref(false);
 const deleteProductDialog = ref(false);
+const buscar = ref("")
+
+// para lazy
+const loading = ref(false)
+const lazyParams = ref({page: 0})
 
 onMounted(() => {
   listarProductos();
   getCategorias();
 });
 
+const onPage = (event) => {
+  console.log(event)
+  lazyParams.value = event;
+  listarProductos()
+}
+
 async function listarProductos() {
-  const { data } = await productoService.listar();
+  loading.value = true
+  console.log("PAGE: ", lazyParams.value.page)
+
+  let page = lazyParams.value.page+1;
+  let limit = lazyParams.value.rows;
+
+  const { data } = await productoService.listar(page, limit, buscar.value);
+  loading.value = false
   console.log(data);
   productos.value = data.data;
   totalRecords.value = data.total;
@@ -285,9 +321,8 @@ const saveProduct = async () => {
     product.value.precio
   ) {
     if (product.value.id) {
-        
-        await productoService.modificar(product.value, product.value.id)
-listarProductos();
+      await productoService.modificar(product.value, product.value.id);
+      listarProductos();
       toast.add({
         severity: "success",
         summary: "Actualizado",
@@ -311,13 +346,32 @@ listarProductos();
 };
 
 const editProduct = (editProduct) => {
-    product.value = { ...editProduct };
-    console.log(product);
-    productDialog.value = true;
+  product.value = { ...editProduct };
+  console.log(product);
+  productDialog.value = true;
 };
 
 const confirmDeleteProduct = (editProduct) => {
-    product.value = editProduct;
-    deleteProductDialog.value = true;
+  product.value = editProduct;
+  deleteProductDialog.value = true;
 };
+
+const deleteProduct = async () => {
+  await productoService.eliminar(product.value.id);
+
+  listarProductos();
+
+  deleteProductDialog.value = false;
+  product.value = {};
+  toast.add({
+    severity: "success",
+    summary: "Eliminado",
+    detail: "Producto Eliminado",
+    life: 3000,
+  });
+};
+
+const buscador = () => {
+  listarProductos()
+}
 </script>

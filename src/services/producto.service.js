@@ -1,8 +1,8 @@
 import { http } from "./Http"
 
 export default {
-    listar(page=1, q=""){
-        return http().get(`/producto?page=${page}&q=${q}`);
+    listar(page=1, limit=10, q=""){
+        return http().get(`/producto?page=${page}&limit=${limit}&q=${q}`);
     },
     guardar(datos){
         return http().post("/producto", datos);

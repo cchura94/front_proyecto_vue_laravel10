@@ -15,5 +15,8 @@ export default {
     },
     eliminar(id){
         return http().delete("/producto/"+id);
+    },
+    actualizarImagen(id, datos) {
+        return http().post(`/producto/${id}/actualizar-imagen`, datos)
     }
 }

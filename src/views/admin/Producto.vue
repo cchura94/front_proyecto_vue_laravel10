@@ -56,7 +56,11 @@
           <h5 class="m-0">Gestión Productos</h5>
           <span class="block mt-2 md:mt-0 p-input-icon-left">
             <i class="pi pi-search" />
-            <InputText placeholder="Buscar..." v-model="buscar" @keypress.enter="buscador()" />
+            <InputText
+              placeholder="Buscar..."
+              v-model="buscar"
+              @keypress.enter="buscador()"
+            />
           </span>
         </div>
       </template>
@@ -117,6 +121,12 @@
       </Column>
       <Column headerStyle="min-width:10rem;">
         <template #body="slotProps">
+          <Button
+            icon="pi pi-image"
+            class="p-button-rounded p-button-info mr-2"
+            @click="imagenProducto(slotProps.data)"
+          />
+
           <Button
             icon="pi pi-pencil"
             class="p-button-rounded p-button-success mr-2"
@@ -248,6 +258,26 @@
         />
       </template>
     </Dialog>
+
+    <Dialog
+      v-model:visible="productDialogImagen"
+      :style="{ width: '650px' }"
+      header="Imagen"
+      :modal="true"
+      class="p-fluid"
+    >
+    <img :src="`http://127.0.0.1:8000/${product.imagen}`" alt="" width="200">
+      <FileUpload
+        customUpload @uploader="subirImagenProducto"
+        :multiple="true"
+        accept="image/*"
+        :maxFileSize="1000000"
+      >
+        <template #empty>
+          <p>Arrastrar y Soltar para subir imagen.</p>
+        </template>
+      </FileUpload>
+    </Dialog>
   </div>
 </template>
 
@@ -267,11 +297,12 @@ const productDialog = ref(false);
 const product = ref({});
 const submitted = ref(false);
 const deleteProductDialog = ref(false);
-const buscar = ref("")
+const productDialogImagen = ref(false);
+const buscar = ref("");
 
 // para lazy
-const loading = ref(false)
-const lazyParams = ref({page: 0})
+const loading = ref(false);
+const lazyParams = ref({ page: 0 });
 
 onMounted(() => {
   listarProductos();
@@ -279,20 +310,20 @@ onMounted(() => {
 });
 
 const onPage = (event) => {
-  console.log(event)
+  console.log(event);
   lazyParams.value = event;
-  listarProductos()
-}
+  listarProductos();
+};
 
 async function listarProductos() {
-  loading.value = true
-  console.log("PAGE: ", lazyParams.value.page)
+  loading.value = true;
+  console.log("PAGE: ", lazyParams.value.page);
 
-  let page = lazyParams.value.page+1;
+  let page = lazyParams.value.page + 1;
   let limit = lazyParams.value.rows;
 
   const { data } = await productoService.listar(page, limit, buscar.value);
-  loading.value = false
+  loading.value = false;
   console.log(data);
   productos.value = data.data;
   totalRecords.value = data.total;
@@ -351,6 +382,11 @@ const editProduct = (editProduct) => {
   productDialog.value = true;
 };
 
+const imagenProducto = (prod) => {
+  product.value = { ...prod };
+  productDialogImagen.value = true;
+};
+
 const confirmDeleteProduct = (editProduct) => {
   product.value = editProduct;
   deleteProductDialog.value = true;
@@ -372,6 +408,27 @@ const deleteProduct = async () => {
 };
 
 const buscador = () => {
-  listarProductos()
+  listarProductos();
+};
+
+const subirImagenProducto = async (event) => {
+  const file = event.files[0];
+  
+  let formData = new FormData();
+  formData.append("imagen", file)
+
+  await productoService.actualizarImagen(product.value.id, formData)
+  productDialogImagen.value = false;
+  product.value = {};
+
+  listarProductos();
+
+  toast.add({
+    severity: "success",
+    summary: "Imagen Subida",
+    detail: "Producto Imagen Actualizado",
+    life: 3000,
+  });
+
 }
 </script>

@@ -115,6 +115,7 @@
             <Button
               label="REGISTRAR PEDIDO"
               icon="pi pi-save"
+              @click="guardarPedido"
             />
           </div>
         </div>
@@ -128,6 +129,7 @@ import TablaProductoComponent from "@/components/admin/TablaProductoComponent.vu
 import { onMounted, ref } from "vue";
 import productoService from "../../../services/producto.service";
 import clienteService from "../../../services/cliente.service";
+import pedidoService from "../../../services/pedido.service";
 
 
 
@@ -186,6 +188,24 @@ const guardarCliente = async () => {
 const buscarCliente = async () => {
     const {data} = await clienteService.buscar(buscarClie.value)
     cliente_seleccionado.value = data;
+}
+
+const guardarPedido = async () => {
+  if(confirm("¿Está seguro de registrar el Pedido?")){
+
+    const datos = {
+        "cliente_id": cliente_seleccionado.value.id,
+        "productos": carrito.value
+    }
+
+    const {data} = await pedidoService.guardar(datos);
+
+    carrito.value = []
+    cliente.value = {}
+    cliente_seleccionado.value = {}
+    buscarClie.value = ""    
+
+  }
 }
 
 </script>

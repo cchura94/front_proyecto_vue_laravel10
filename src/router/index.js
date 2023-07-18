@@ -4,6 +4,8 @@ import VistaLogin from '../views/LoginView.vue'
 import AppLayout from '@/layout/AppLayout.vue';
 import Categoria from '@/views/admin/Categoria.vue'
 import Producto from '@/views/admin/Producto.vue'
+import Cliente from '@/views/admin/Cliente.vue'
+import Usuario from '@/views/admin/Usuario.vue'
 import NuevoPedido from '@/views/admin/pedido/NuevoPedido.vue'
 import ListaPedido from '@/views/admin/pedido/ListaPedido.vue'
 
@@ -58,6 +60,18 @@ const router = createRouter({
           path: 'pedido',
           name: 'PedidoLista',
           component: ListaPedido,
+          meta: {requireAuth: true}
+        },
+        {
+          path: 'cliente',
+          name: 'Cliente',
+          component: Cliente,
+          meta: {requireAuth: true}
+        },
+        {
+          path: 'usuario',
+          name: 'Usuario',
+          component: Usuario,
           meta: {requireAuth: true}
         }
       ]

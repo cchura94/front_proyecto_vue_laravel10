@@ -151,6 +151,7 @@ const listarProducto = async () => {
 };
 
 const addCarrito = (prod) => {
+  
   const p = {
     producto_id: prod.id,
     nombre: prod.nombre,

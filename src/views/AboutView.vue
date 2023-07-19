@@ -2,12 +2,17 @@
   <div class="card" v-if="perfil">
     <h1>CORREO: {{ perfil.email }}</h1>
     <h1>NOMBRE: {{ perfil.name }}</h1>
+    <h1>CONTRADOR: {{ contador.micontador }}</h1>
   </div>
 </template>
 
 <script setup>
 import { ref } from "vue";
 import authService from "../services/auth.service";
+
+// para pinia
+    import { useContadorStore } from "@/stores/contador"
+    const contador = useContadorStore()
 
 const perfil = ref(null)
 

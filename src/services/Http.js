@@ -1,5 +1,6 @@
 import axios from "axios"
-const url_base = "http://127.0.0.1:8000/api";
+// const url_base = "http://127.0.0.1:8000/api";
+const url_base = "https://empresa.blumbit.net/back/public/api"
 
 export const http = () => {
 

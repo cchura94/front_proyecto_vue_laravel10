@@ -12,6 +12,7 @@
         <br>
         <input type="button" value="Ingresar" v-on:click="funIngresar()">
     </div-->
+
     <div class="surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden">
         <div class="flex flex-column align-items-center justify-content-center">
             <div style="border-radius: 56px; padding: 0.3rem; background: linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%)">
@@ -51,6 +52,10 @@
     import axios from "axios";
     import { useRouter } from 'vue-router'
     import authService from "./../services/auth.service"
+    
+    import { useAuthStore } from "@/stores/auth"
+    const auth = useAuthStore()
+    
 
     // variables
     // const correo = ref("micorreo@mail.com");
@@ -67,7 +72,10 @@
             console.log("CON INTERCEPTOR: ", data)
             errors.value = {}
 
+            auth.setUsuario(data.usuario.email)
+
             localStorage.setItem("access_token", data.access_token);
+            localStorage.setItem("auth", data.usuario.email)
             router.push("/about")
            
         } catch (error) {
